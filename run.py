@@ -1,7 +1,7 @@
 # coding=utf-8
 import time
 import itchat
-
+import os
 
 def simple_reply():
     @itchat.msg_register
@@ -43,7 +43,7 @@ def test_reply():
             txt = msg['Text']
             is_birthday = (txt.isdigit() and len(txt)==8)
             if( is_birthday ):
-                return '@img@picture_5.jpg'
+                return '@img@test.gif'
             else:
                 itchat.send(u'格式错误。请输入你的出生日期，如： 20150908', msg['FromUserName'])
 
