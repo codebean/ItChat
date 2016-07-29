@@ -1,3 +1,4 @@
+# coding=utf-8
 import time
 import itchat
 
@@ -34,7 +35,28 @@ def complex_reply():
 
     itchat.run()
 
+def test_reply():
+    @itchat.msg_register
+    def get_pic(msg):
+        #print itchat.get_userinfo()
+        if msg.get('Type', '') == 'Text':
+            txt = msg['Text']
+            is_birthday = (txt.isdigit() and len(txt)==8)
+            if( is_birthday ):
+                return '@img@picture_5.jpg'
+            else:
+                itchat.send(u'格式错误。请输入你的出生日期，如： 20150908', msg['FromUserName'])
+
+    @itchat.msg_register('Friends')
+    def add_friend(msg):
+        itchat.add_friend(**msg['Text'])
+        itchat.get_contract()
+        itchat.send(u'请输入你的出生日期，如: 20150908', msg['RecommendInfo']['UserName'])
+
+    itchat.run()
+
 if __name__ == '__main__':
     itchat.auto_login()
     # simple_reply()
-    complex_reply()
+    # complex_reply()
+    test_reply()
