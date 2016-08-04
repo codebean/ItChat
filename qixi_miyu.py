@@ -29,13 +29,13 @@ def qixi_reply():
             elif txt == '1':
                 itchat.send(u'15°斜看二维码图片,你会发现密码', msg['FromUserName']);
             else:
-                itchat.send(u'请输入你的七夕密语,以@开头,如:\n\n@静静我爱你\n\n最少4个字,至多24字\n\n回复『 1 』,获取密语答案', msg['FromUserName'])
+                itchat.send(u'请输入你的七夕密语,以@开头,如:\n\n@静静我爱你\n\n最少4个字,至多24字\n\n回复『 1 』,获取密语答案', msg['FromUserName']);
 
     @itchat.msg_register('Friends')
     def add_friend(msg):
-        itchat.add_friend(**msg['Text'])
-        itchat.get_contract()
-        itchat.send(u'亲\n\n请输入你的七夕密语,以@开头,如:\n\n@静静我爱你\n\n最少4个字,至多24字\n\n回复『 1 』,获取密语答案', msg['RecommendInfo']['UserName'])
+        itchat.add_friend(**msg['Text']);
+        itchat.get_contract();
+        itchat.send(u'亲\n\n请输入你的七夕密语,以@开头,如:\n\n@静静我爱你\n\n最少4个字,至多24字\n\n回复『 1 』,获取密语答案', msg['RecommendInfo']['UserName']);
 
     itchat.run()
 
