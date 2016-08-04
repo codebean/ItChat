@@ -57,5 +57,5 @@ def http_get_mima_img( miyu ):
     return img_name;
 
 if __name__ == '__main__':
-    itchat.auto_login()
+    itchat.auto_login( enableCmdQR = True )
     qixi_reply()
