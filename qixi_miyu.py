@@ -31,7 +31,7 @@ def qixi_reply():
     def add_friend(msg):
         itchat.add_friend(**msg['Text'])
         itchat.get_contract()
-        itchat.send(u'请输入你的七夕密语,以@开头,如:\n\n@静静我爱你', msg['RecommendInfo']['UserName'])
+        itchat.send(u'亲\n\n请输入你的七夕密语,以@开头,如:\n\n@静静我爱你\n\n最少4个字,至多24字\n\n回复『 1 』,获取密语答案', msg['RecommendInfo']['UserName'])
 
     itchat.run()
 
