@@ -20,8 +20,12 @@ def qixi_reply():
                 txt = txt[1:];
             if( is_at and len(txt)>=4 and len(txt)<=24 ):
                 img = http_get_mima_img( txt );
-                print img;
-                return '@img@'+img;
+                # print img;
+                if os.path.exists( img ):
+                    itchat.send(u'哈哈,你的密语图片生成了,发给你的朋友让他猜猜看', msg['FromUserName']);
+                    return '@img@'+img;
+                else:
+                    itchat.send(u'有点忙,请稍候在试试', msg['FromUserName']);
             elif txt == '1':
                 itchat.send(u'15°斜看二维码图片,你会发现密码', msg['FromUserName']);
             else:
