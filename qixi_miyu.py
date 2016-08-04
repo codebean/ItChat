@@ -18,7 +18,7 @@ def qixi_reply():
             if txt[0] =="@":
                 is_at = True;
                 txt = txt[1:];
-            if( is_at ):
+            if( is_at and len(txt)>=4 and len(txt)<=24 ):
                 img = http_get_mima_img( txt );
                 print img;
                 return '@img@'+img;
