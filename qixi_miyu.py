@@ -27,7 +27,7 @@ def qixi_reply():
                 else:
                     itchat.send(u'有点忙,请稍候在试试', msg['FromUserName']);
             elif txt == '1':
-                itchat.send(u'15°斜看二维码图片,你会发现密码', msg['FromUserName']);
+                itchat.send(u'视线15°斜看密语图片,你会发现密码', msg['FromUserName']);
             else:
                 itchat.send(u'请输入你的七夕密语,以@开头,如:\n\n@静静我爱你\n\n最少4个字,至多24字\n\n回复『 1 』,获取密语答案', msg['FromUserName']);
 

@@ -40,7 +40,7 @@ class client(object):
         self.s.cookies = requests.utils.cookiejar_from_dict(j['cookies'])
         self.storageClass.loads(j['storage'])
         if self.__sync_check():
-            out.print_line('Login successfully as %s\n'%self.storageClass.nickName, True)
+            out.print_line(u'Login successfully as %s\n'%self.storageClass.nickName, True)
             self.start_receiving()
             return True
         else:
