@@ -5,7 +5,7 @@ import os
 import requests
 import urllib
 
-MIMA_URL = 'http://gerenhao.mima.huyusb.cc/mima/json'
+MIMA_URL = 'http://gerenhao.mima.fetqf.com/mima/json'
 
 def qixi_reply():
     @itchat.msg_register
