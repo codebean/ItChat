@@ -8,6 +8,7 @@ from . import config, storage, out, tools
 import requests
 
 BASE_URL = config.BASE_URL
+QR_DIR = 'QR.jpg'
 
 class client(object):
     def __init__(self):
@@ -88,7 +89,6 @@ class client(object):
             if uuid == None: uuid = self.uuid
             url = '%s/qrcode/%s'%(BASE_URL, uuid)
             r = self.s.get(url, stream = True)
-            QR_DIR = 'QR.jpg'
             with open(QR_DIR, 'wb') as f: f.write(r.content)
             if enableCmdQR:
                 tools.print_cmd_qr(QR_DIR, enableCmdQR = enableCmdQR)
@@ -105,7 +105,7 @@ class client(object):
         regx = r'window.code=(\d+)'
         data = re.search(regx, r.text)
         if data and data.group(1) == '200':
-            os.remove('QR.jpg')
+            os.remove(QR_DIR)
             regx = r'window.redirect_uri="(\S+)";'
             self.loginInfo['url'] = re.search(regx, r.text).group(1)
             r = self.s.get(self.loginInfo['url'], allow_redirects=False)
@@ -255,8 +255,10 @@ class client(object):
         srl = [40, 43, 50, 52, 53, 9999]
         # 40 msg, 43 videochat, 50 VOIPMSG, 52 voipnotifymsg, 53 webwxvoipnotifymsg, 9999 sysnotice
         for m in l:
-            tools.msg_formatter(m, 'Content')
-            if '@@' in m['FromUserName']: self.__produce_group_chat(m)
+            if '@@' in m['FromUserName']:
+                self.__produce_group_chat(m)
+            else:
+                tools.msg_formatter(m, 'Content')
             if m['MsgType'] == 1: # words
                 if m['Url']:
                     regx = r'(.+?\(.+?\))'
@@ -390,14 +392,18 @@ class client(object):
         if not r: return
         actualUserName, content = r.groups()
         try:
-            self.storageClass.groupDict[msg['FromUserName']][ActualUserName]
+            self.storageClass.groupDict[msg['FromUserName']][actualUserName]
         except:
             groupMemberList = self.get_batch_contract(msg['FromUserName'])['MemberList']
             self.storageClass.groupDict[msg['FromUserName']] = {member['UserName']: member for member in groupMemberList}
         msg['ActualUserName'] = actualUserName
-        msg['ActualNickName'] = self.storageClass.groupDict[msg['FromUserName']][actualUserName]['NickName']
+        msg['ActualNickName'] = (self.storageClass.groupDict[msg['FromUserName']][actualUserName]['DisplayName'] or
+            self.storageClass.groupDict[msg['FromUserName']][actualUserName]['NickName'])
         msg['Content']        = content
-        msg['isAt']           = u'@%s\u2005'%self.storageClass.nickName in msg['Content']
+        tools.msg_formatter(msg, 'Content')
+        msg['isAt']           = u'@%s\u2005' % (
+            self.storageClass.groupDict[msg['FromUserName']][self.storageClass.userName]['DisplayName']
+            or self.storageClass.nickName) in msg['Content']
     def send_msg(self, msg = 'Test Message', toUserName = None):
         url = '%s/webwxsendmsg'%self.loginInfo['url']
         payloads = {
@@ -412,6 +418,7 @@ class client(object):
                 }, }
         headers = { 'ContentType': 'application/json; charset=UTF-8' }
         r = self.s.post(url, data = json.dumps(payloads, ensure_ascii = False).encode('utf8'), headers = headers)
+        return r.json()['BaseResponse']['Ret'] == 0
     def __upload_file(self, fileDir, isPicture = False):
         if not tools.check_file(fileDir): return
         url = 'https://file%s.wx.qq.com/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json'%('2' if '2' in self.loginInfo['url'] else '')
@@ -531,6 +538,7 @@ class client(object):
 
         r = self.s.post(url, data=json.dumps(params),headers=headers)
         dic = json.loads(r.content.decode('utf8', 'replace'))
+        print(dic)
         return dic['ChatRoomName']
     def delete_member_from_chatroom(self, chatRoomName, memberList):
         url = ('%s/webwxupdatechatroom?fun=delmember&pass_ticket=%s'%(
@@ -540,7 +548,7 @@ class client(object):
             'ChatRoomName': chatRoomName,
             'DelMemberList': ','.join([member['UserName'] for member in memberList]), }
         headers = {'content-type': 'application/json; charset=UTF-8'}
-        return self.s.post(url, data=json.dumps(params),headers=headers)
+        return self.s.post(url, data=json.dumps(params),headers=headers).json()
     def add_member_into_chatroom(self, chatRoomName, memberList):
         url = ('%s/webwxupdatechatroom?fun=addmember&pass_ticket=%s'%(
             self.loginInfo['url'], self.loginInfo['pass_ticket']))
@@ -549,7 +557,7 @@ class client(object):
             'ChatRoomName': chatRoomName,
             'AddMemberList': ','.join([member['UserName'] for member in memberList]), }
         headers = {'content-type': 'application/json; charset=UTF-8'}
-        r = self.s.post(url, data=json.dumps(params),headers=headers)
+        return self.s.post(url, data=json.dumps(params),headers=headers).json()
 
 if __name__ == '__main__':
     wcc = WeChatClient()

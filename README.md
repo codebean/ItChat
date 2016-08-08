@@ -69,6 +69,12 @@ itchat.auto_login(enableCmdQR = True)
 itchat.auto_login(enableCmdQR = 2)
 ```
 
+默认控制台背景色为暗色（黑色），若背景色为浅色（白色），可以将enableCmdQR赋值为负值：
+
+```python
+itchat.auto_login(enableCmdQR = -1)
+```
+
 ### 退出程序后暂存登陆状态
 
 通过如下命令登陆，即使程序关闭，一定时间内重新开启也可以不用重新扫码。
@@ -135,6 +141,10 @@ A: 这是由于`requests`的编码问题导致的。若需要支持中文文件�
 Q: 为什么我在设定了`itchat.auto_login()`的`enableCmdQR`为`True`后还是没有办法在命令行显示二维码？
 
 A: 这是由于没有安装可选的包`pillow`，可以使用右边的命令安装：`pip install pillow`
+
+Q: 如何通过这个包将自己的微信号变为控制器？
+
+A: 有两种方式：发送、接受自己UserName的消息；发送接收文件传输助手（filehelper）的消息
 
 ## Author
 
