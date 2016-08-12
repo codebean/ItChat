@@ -45,6 +45,8 @@ class client(object):
             self.start_receiving()
             return True
         else:
+            self.storageClass.groupDict.clear()
+            self.s.cookies.clear() # other info will be automatically cleared
             return False
     def auto_login(self, enableCmdQR = False):
         def open_QR():
@@ -70,7 +72,7 @@ class client(object):
         self.web_init()
         self.show_mobile_login()
         tools.clear_screen()
-        self.get_contract()
+        self.get_contract(True)
         out.print_line('Login successfully as %s\n'%self.storageClass.nickName, False)
         self.start_receiving()
     def get_QRuuid(self):
@@ -297,6 +299,7 @@ class client(object):
                             f.write(block)
                 msg = {
                     'Type': 'Recording',
+                    'FileName' : '%s.mp4' % time.strftime('%y%m%d-%H%M%S', time.localtime()),
                     'Text': download_voice,}
             elif m['MsgType'] == 37: # friends
                 msg = {
@@ -363,6 +366,7 @@ class client(object):
                                 os.fsync(f.fileno())
                 msg = {
                     'Type': 'Video',
+                    'FileName' : '%s.mp4' % time.strftime('%y%m%d-%H%M%S', time.localtime()),
                     'Text': download_video, }
             elif m['MsgType'] == 10000:
                 msg = {
@@ -419,7 +423,7 @@ class client(object):
         headers = { 'ContentType': 'application/json; charset=UTF-8' }
         r = self.s.post(url, data = json.dumps(payloads, ensure_ascii = False).encode('utf8'), headers = headers)
         return r.json()['BaseResponse']['Ret'] == 0
-    def __upload_file(self, fileDir, isPicture = False):
+    def __upload_file(self, fileDir, isPicture = False, isVideo = False):
         if not tools.check_file(fileDir): return
         url = 'https://file%s.wx.qq.com/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json'%('2' if '2' in self.loginInfo['url'] else '')
         # save it on server
@@ -432,7 +436,7 @@ class client(object):
             'type': (None, fileType),
             'lastModifiedDate': (None, time.strftime('%a %b %d %Y %H:%M:%S GMT+0800 (CST)')),
             'size': (None, fileSize),
-            'mediatype': (None, 'pic' if isPicture else 'doc'),
+            'mediatype': (None, 'pic' if isPicture else 'video' if isVideo else'doc'),
             'uploadmediarequest': (None, json.dumps({
                 'BaseRequest': self.loginInfo['BaseRequest'],
                 'ClientMediaId': int(time.time()),
@@ -491,6 +495,27 @@ class client(object):
             'Content-Type': 'application/json;charset=UTF-8', }
         r = self.s.post(url, data = json.dumps(payloads, ensure_ascii = False).encode('utf8'), headers = headers)
         return True
+    def send_video(self, fileDir, toUserName = None):
+        if toUserName is None: toUserName = self.storageClass.userName
+        mediaId = self.__upload_file(fileDir, isVideo = True)
+        if mediaId is None: return False
+        url = '%s/webwxsendvideomsg?fun=async&f=json&pass_ticket=%s' % (
+            self.loginInfo['url'], self.loginInfo['pass_ticket'])
+        payloads = {
+            'BaseRequest': self.loginInfo['BaseRequest'],
+            'Msg': {
+                'Type'         : 43,
+                'MediaId'      : mediaId,
+                'FromUserName' : self.storageClass.userName,
+                'ToUserName'   : toUserName,
+                'LocalID'      : str(time.time() * 1e7),
+                'ClientMsgId'  : str(time.time() * 1e7), },
+            'Scene': 0, }
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36',
+            'Content-Type': 'application/json;charset=UTF-8', }
+        r = self.s.post(url, data = json.dumps(payloads, ensure_ascii = False).encode('utf8'), headers = headers)
+        return True
     def set_alias(self, userName, alias):
         url = '%s/webwxoplog?lang=%s&pass_ticket=%s'%(
             self.loginInfo['url'], 'zh_CN', self.loginInfo['pass_ticket'])
@@ -505,14 +530,14 @@ class client(object):
         url = '%s/webwxverifyuser?r=%s&pass_ticket=%s'%(self.loginInfo['url'], int(time.time()), self.loginInfo['pass_ticket'])
         payloads = {
             'BaseRequest': self.loginInfo['BaseRequest'],
-            'Opcode': status,
+            'Opcode': status, # 3
             'VerifyUserListSize': 1,
             'VerifyUserList': [{
                 'Value': userName,
-                'VerifyUserTicket': ticket, }],
+                'VerifyUserTicket': ticket, }], # ''
             'VerifyContent': '',
             'SceneListCount': 1,
-            'SceneList': 33,
+            'SceneList': 33, # [33]
             'skey': self.loginInfo['skey'], }
         headers = { 'ContentType': 'application/json; charset=UTF-8' }
         r = self.s.post(url, data = json.dumps(payloads), headers = headers)
