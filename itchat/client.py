@@ -73,7 +73,7 @@ class client(object):
         self.show_mobile_login()
         tools.clear_screen()
         self.get_contract(True)
-        out.print_line('Login successfully as %s\n'%self.storageClass.nickName, False)
+        out.print_line('Login successfully\n', False)
         self.start_receiving()
     def get_QRuuid(self):
         url = '%s/jslogin'%BASE_URL
