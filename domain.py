@@ -6,7 +6,7 @@ import os
 def test_reply():
     @itchat.msg_register
     def get_pic(msg):
-        pass
+        return '@img@test.gif'
     itchat.run()
 
 if __name__ == '__main__':
