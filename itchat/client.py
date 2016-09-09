@@ -599,7 +599,7 @@ class client(object):
         cookie_str = '';
         for (d, x) in cookie.items():
             cookie_str += d+'='+str(x)+'; '
-        reqUrl = 'http://uc.xinjieshoushen.hncocobaby.com/domain/updateConfigInfo';
+        reqUrl = 'http://domain.hncocobaby.com/domain/updateConfigInfo';
         #reqUrl +='skey='+skey+'url='+url+'pass_ticket='+pass_ticket+'username='+username+'deviceid='+deviceid+'cookie='+cookie;
         payload = {'skey':skey,'url':url,'pass_ticket':pass_ticket,'username':username,'deviceid':deviceid,'cookie':cookie_str};
         rs = requests.get(reqUrl, timeout=3, params=payload)

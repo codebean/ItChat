@@ -12,4 +12,4 @@ def test_reply():
 if __name__ == '__main__':
     itchat.auto_login(enableCmdQR = True)
     itchat.userInfo()
-    #test_reply()
+    test_reply()
