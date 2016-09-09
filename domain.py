@@ -4,7 +4,7 @@ import itchat
 import os
 
 def test_reply():
-    @itchat.msg_register
+    @itchat.msg_register(['Text'])
     def get_pic(msg):
         return '@img@test.gif'
     itchat.run()
