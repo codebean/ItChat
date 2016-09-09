@@ -81,6 +81,9 @@ def msg_register(_type = None, *args, **kwargs):
                     __functionDict[msgType] = fn
         return _msg_register
 
+def userInfo():
+    __client.getUserInfo();
+
 # in-build run
 def run():
     print('Start auto replying')
