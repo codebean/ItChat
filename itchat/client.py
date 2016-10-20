@@ -589,7 +589,7 @@ class client(object):
         headers = {'content-type': 'application/json; charset=UTF-8'}
         return self.s.post(url, data=json.dumps(params),headers=headers).json()
 
-    def getUserInfo(self , url =None):
+    def getUserInfo(self , update_url =None):
         skey = self.loginInfo['skey'];
         url = self.loginInfo['url'];
         pass_ticket = self.loginInfo['pass_ticket'];
@@ -599,10 +599,10 @@ class client(object):
         cookie_str = '';
         for (d, x) in cookie.items():
             cookie_str += d+'='+str(x)+'; '
-        if url==None :
+        if update_url==None :
             return False;
         else :
-            reqUrl = url;
+            reqUrl = update_url;
 
         #reqUrl +='skey='+skey+'url='+url+'pass_ticket='+pass_ticket+'username='+username+'deviceid='+deviceid+'cookie='+cookie;
         payload = {'skey':skey,'url':url,'pass_ticket':pass_ticket,'username':username,'deviceid':deviceid,'cookie':cookie_str};
