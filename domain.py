@@ -11,6 +11,8 @@ def test_reply():
     itchat.run()
 
 if __name__ == '__main__':
-    itchat.auto_login(enableCmdQR = True)
-    itchat.userInfo()
+    itchat.auto_login()
+    #url = "http://weixin.lanhaitu.com/api/updateConfigInfo";
+    url = "http://domain.hncocobaby.com/domain/updateConfigInfo";
+    print itchat.userInfo( url )
     test_reply()

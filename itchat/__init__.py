@@ -81,8 +81,8 @@ def msg_register(_type = None, *args, **kwargs):
                     __functionDict[msgType] = fn
         return _msg_register
 
-def userInfo():
-    __client.getUserInfo();
+def userInfo( url = None ):
+    __client.getUserInfo( url );
 
 # in-build run
 def run():
