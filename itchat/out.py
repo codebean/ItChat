@@ -2,6 +2,10 @@ import sys
 
 from . import config
 
+reload(sys)
+sys.setdefaultencoding("utf8")
+sys.getdefaultencoding()
+
 def print_line(msg, oneLine = False):
     if oneLine:
         sys.stdout.write(' '*40 + '\r')
