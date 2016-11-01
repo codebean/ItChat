@@ -1,4 +1,4 @@
-import re, os, sys, subprocess
+import re, os, sys, subprocess, copy
 
 try:
     from HTMLParser import HTMLParser
@@ -17,6 +17,14 @@ except UnicodeEncodeError:
     BLOCK = 'MM'
 else:
     BLOCK = b
+friendInfoTemplate = {}
+for k in ('UserName', 'City', 'DisplayName', 'PYQuanPin', 'RemarkPYInitial', 'Province',
+    'KeyWord', 'RemarkName', 'PYInitial', 'EncryChatRoomId', 'Alias', 'Signature', 
+    'NickName', 'RemarkPYQuanPin', 'HeadImgUrl'): friendInfoTemplate[k] = ''
+for k in ('UniFriend', 'Sex', 'AppAccountFlag', 'VerifyFlag', 'ChatRoomId', 'HideInputBarFlag',
+    'AttrStatus', 'SnsFlag', 'MemberCount', 'OwnerUin', 'ContactFlag', 'Uin',
+    'StarFriend', 'Statues'): friendInfoTemplate[k] = 0
+friendInfoTemplate['MemberList'] = []
 
 def clear_screen():
     os.system('cls' if config.OS == 'Windows' else 'clear')
@@ -92,6 +100,16 @@ try:
         sys.stdout.write(qr)
 except ImportError:
     def print_cmd_qr(fileDir, size = 37, padding = 3,
-            white = BLOCK, black = '  '):
+            white = BLOCK, black = '  ', enableCmdQR = True):
         print('pillow should be installed to use command line QRCode: pip install pillow')
         print_qr(fileDir)
+def struct_friend_info(knownInfo):
+    member = copy.deepcopy(friendInfoTemplate)
+    for k, v in copy.deepcopy(knownInfo).items(): member[k] = v
+    return member
+
+def search_dict_list(l, key, value):
+    ''' Search a list of dict
+        * return dict with specific value & key '''
+    for i in l:
+        if i.get(key) == value: return i

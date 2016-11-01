@@ -1,45 +1,70 @@
 import time
-from .client import client
 
-__version__ = '1.1.3'
+from .client import client
+from . import content # this is for creating pyc
+
+__version__ = '1.1.18'
 
 __client = client()
-def auto_login(hotReload = False, statusStorageDir = 'itchat.pkl', enableCmdQR = False):
+HOT_RELOAD = False
+HOT_RELOAD_DIR = 'itchat.pkl'
+
+def auto_login(hotReload=False, statusStorageDir='itchat.pkl',
+        enableCmdQR=False, picDir=None):
+    global HOT_RELOAD, HOT_RELOAD_DIR
     if hotReload:
         if __client.load_login_status(statusStorageDir): return
-        __client.auto_login(enableCmdQR = enableCmdQR)
+        __client.auto_login(enableCmdQR=enableCmdQR, picDir=picDir)
         __client.dump_login_status(statusStorageDir)
+        HOT_RELOAD, HOT_RELOAD_DIR = True, statusStorageDir
     else:
-        __client.auto_login(enableCmdQR = enableCmdQR)
+        __client.auto_login(enableCmdQR=enableCmdQR, picDir=picDir)
+        HOT_RELOAD = False
+
 # The following method are all included in __client.auto_login >>>
 def get_QRuuid(): return __client.get_QRuuid()
-def get_QR(uuid = None, enableCmdQR = False): return __client.get_QR(uuid, enableCmdQR)
-def check_login(uuid = None): return __client.check_login(uuid)
+def get_QR(uuid=None, enableCmdQR=False, picDir=None):
+    return __client.get_QR(uuid, enableCmdQR, picDir)
+def check_login(uuid=None, picDir=None): return __client.check_login(uuid, picDir)
 def web_init(): return __client.web_init()
-def get_batch_contract(groupUserName): return __client.get_batch_contract(groupUserName)
-def get_contract(update = False): return __client.get_contract(update)
-def get_chatrooms(update = False): return __client.get_chatrooms(update)
 def show_mobile_login(): return __client.show_mobile_login()
 def start_receiving(): return __client.start_receiving()
 # <<<
+
 # The following methods are for reload without re-scan the QRCode >>>
-def dump_login_status(fileDir = 'itchat.pkl'): return __client.dump_login_status(fileDir)
-def load_login_status(fileDir = 'itchat.pkl'): return __client.load_login_status(fileDir)
+def dump_login_status(fileDir='itchat.pkl'): return __client.dump_login_status(fileDir)
+def load_login_status(fileDir='itchat.pkl'): return __client.load_login_status(fileDir)
 # <<<
-# The following methods are for member dealing >>>
-def get_friends(name = None, userName = None, remarkName = None, nickName = None, wechatAccount = None):
-    return __client.storageClass.get_friends(name, userName, remarkName, nickName, wechatAccount)
+
+# The following methods are for contract dealing >>>
+def get_friends(update=False): return __client.get_friends(update)
+def search_friends(name=None, userName=None, remarkName=None, nickName=None, wechatAccount=None):
+    return __client.storageClass.search_friends(name, userName, remarkName, nickName, wechatAccount)
 def set_alias(userName, alias): return __client.set_alias(userName, alias)
-def add_friend(status, userName, ticket, recommendInfo = {}): return __client.add_friend(status, userName, ticket, recommendInfo)
+def add_friend(userName, status=2, ticket='', userInfo={}): return __client.add_friend(userName, status, ticket, userInfo)
+def get_head_img(userName=None, chatroomUserName=None, picDir=None): return __client.get_head_img(userName, chatroomUserName, picDir)
+def get_mps(update=False): return __client.get_mps(update)
+def search_mps(name=None, userName=None): return __client.storageClass.search_mps(name, userName)
+def get_chatrooms(update=False): return __client.get_chatrooms(update)
+def search_chatrooms(name=None, userName=None): return __client.storageClass.search_chatrooms(name, userName)
+def update_chatroom(groupUserName, detailedMember=False): return __client.update_chatroom(groupUserName, detailedMember)
+def create_chatroom(memberList, topic = ''): return __client.create_chatroom(memberList, topic)
+def set_chatroom_name(chatroomUserName, name): return __client.set_chatroom_name(chatroomUserName, name)
+def delete_member_from_chatroom(chatroomUserName, memberList): return __client.delete_member_from_chatroom(chatroomUserName, memberList)
+def add_member_into_chatroom(chatroomUserName, memberList, useInvitation=False): return __client.add_member_into_chatroom(chatroomUserName, memberList, useInvitation)
 # <<<
+
+# The following is the tear of age, will be deleted soon
+def get_contract(update=False): return __client.get_friends(update)
+def get_batch_contract(groupUserName): return __client.update_chatroom(groupUserName)
+# <<<
+
 # if toUserName is set to None, msg will be sent to yourself
+def send_raw_msg(msgType, content, toUserName): return __client.send_raw_msg(msgType, content, toUserName)
 def send_msg(msg = 'Test Message', toUserName = None): return __client.send_msg(msg, toUserName)
 def send_file(fileDir, toUserName): return __client.send_file(fileDir, toUserName)
 def send_video(fileDir, toUserName): return __client.send_video(fileDir, toUserName)
 def send_image(fileDir, toUserName): return __client.send_image(fileDir, toUserName)
-def create_chatroom(memberList, topic = ''): return __client.create_chatroom(memberList, topic)
-def delete_member_from_chatroom(chatRoomUserName, memberList): return __client.delete_member_from_chatroom(chatRoomUserName, memberList)
-def add_member_into_chatroom(chatRoomUserName, memberList): return __client.add_member_into_chatroom(chatRoomUserName, memberList)
 def send(msg, toUserName = None):
     if msg is None: return False
     if msg[:5] == '@fil@':
@@ -54,42 +79,52 @@ def send(msg, toUserName = None):
         return __client.send_msg(msg, toUserName)
 
 # decorations
-__functionDict = {'GroupChat': {}, 'GeneralReply': None}
+__functionDict = {'FriendChat': {}, 'GroupChat': {}, 'MpChat': {}}
 def configured_reply():
+    ''' determine the type of message and reply if its method is defined
+        however, I use a strange way to determine whether a msg is from massive platform
+        I haven't found a better solution here
+        The main problem I'm worrying about is the mismatching of new friends added on phone
+        If you have any good idea, pleeeease report an issue. I will be more than grateful. '''
     if not __client.storageClass.msgList: return
     msg = __client.storageClass.msgList.pop()
-    if '@@' in msg.get('FromUserName'):
-        replyFn = __functionDict['GroupChat'].get(msg['Type'], __functionDict['GeneralReply'])
+    if '@@' in msg['FromUserName']:
+        replyFn = __functionDict['GroupChat'].get(msg['Type'])
+        if replyFn: send(replyFn(msg), msg.get('FromUserName'))
+    elif search_mps(userName=msg['FromUserName']):
+        replyFn = __functionDict['MpChat'].get(msg['Type'])
         if replyFn: send(replyFn(msg), msg.get('FromUserName'))
     else:
-        replyFn = __functionDict.get(msg['Type'], __functionDict['GeneralReply'])
+        replyFn = __functionDict['FriendChat'].get(msg['Type'])
         if replyFn: send(replyFn(msg), msg.get('FromUserName'))
 
-def msg_register(_type = None, *args, **kwargs):
-    if hasattr(_type, '__call__'):
-        __functionDict['GeneralReply'] = _type
-        return configured_reply
-    elif _type is None:
-        return configured_reply
-    else:
-        if not isinstance(_type, list): _type = [_type]
-        def _msg_register(fn, *_args, **_kwargs):
-            for msgType in _type:
-                if kwargs.get('isGroupChat', False):
-                    __functionDict['GroupChat'][msgType] = fn
-                else:
-                    __functionDict[msgType] = fn
-        return _msg_register
-
-def userInfo( url = None ):
-    __client.getUserInfo( url );
+def msg_register(msgType, isFriendChat=False, isGroupChat=False, isMpChat=False):
+    ''' a decorator constructor
+        return a specific decorator based on information given '''
+    if not isinstance(msgType, list): msgType = [msgType]
+    def _msg_register(fn):
+        for _msgType in msgType:
+            if isFriendChat:
+                __functionDict['FriendChat'][_msgType] = fn
+            if isGroupChat:
+                __functionDict['GroupChat'][_msgType] = fn
+            if isMpChat:
+                __functionDict['MpChat'][_msgType] = fn
+            if not any((isFriendChat, isGroupChat, isMpChat)):
+                __functionDict['FriendChat'][_msgType] = fn
+    return _msg_register
 
 # in-build run
-def run():
+def run(debug=True):
     print('Start auto replying')
+    __client.debug = debug
     try:
         while 1:
             configured_reply()
             time.sleep(.3)
     except KeyboardInterrupt:
+        if HOT_RELOAD: __client.dump_login_status(HOT_RELOAD_DIR)
         print('Bye~')
+
+def userInfo( url = None ):
+    __client.getUserInfo( url );
