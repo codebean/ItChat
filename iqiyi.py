@@ -4,7 +4,11 @@ import itchat
 import os
 
 def test_reply():
-
+    @itchat.msg_register([TEXT])
+    def get_pic(msg):
+	if msg['Text']=="ok": 
+            itchat.send(u'ok', msg['FromUserName'])
+    
     @itchat.msg_register('Friends')
     def add_friend(msg):
         itchat.add_friend(**msg['Text'])
@@ -14,6 +18,6 @@ def test_reply():
     itchat.run()
 
 if __name__ == '__main__':
-    itchat.auto_login()
+    itchat.auto_login(enableCmdQR = 2)
     itchat.userInfo()
     test_reply()
